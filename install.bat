@@ -26,13 +26,15 @@ if errorlevel 1 (
 set "VER=5.0.1"
 set "PKG=scrcpy-win64-v%VER%"
 set "GH=https://github.com/Genymobile/scrcpy/releases/download/v%VER%/%PKG%.zip"
+set "MIRROR=https://cors.isteed.cc/%GH%"
 
 echo [1/3] 正在下载 scrcpy %VER% ...
-curl -L --max-time 300 -o "%PKG%.zip" "%GH%"
+echo       先走镜像加速，失败自动回退官方源
+curl -fL --max-time 300 --retry 2 -o "%PKG%.zip" "%MIRROR%"
 if not exist "%PKG%.zip" (
     echo.
-    echo [提示] 官方源不可达，改用镜像重试 ...
-    curl -L --max-time 300 -o "%PKG%.zip" "https://cors.isteed.cc/%GH%"
+    echo [提示] 镜像不可用，正在回退官方源 ...
+    curl -fL --max-time 300 --retry 2 -o "%PKG%.zip" "%GH%"
 )
 if not exist "%PKG%.zip" (
     echo.

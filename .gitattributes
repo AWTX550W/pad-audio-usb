@@ -1,0 +1,11 @@
+# Windows 批处理必须用 CRLF，否则 cmd 解析多字节中文会行错位
+*.bat text eol=crlf
+
+# 文档统一 LF
+*.md   text eol=lf
+*.txt  text eol=lf
+
+# 二进制
+*.zip  binary
+*.exe  binary
+*.dll  binary

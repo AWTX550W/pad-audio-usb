@@ -1,0 +1,15 @@
+# scrcpy 运行时由 install.bat 下载，不进版本库
+scrcpy/
+scrcpy-win64-*/
+
+# 安装过程中的临时包
+*.zip
+
+# 调试用的临时音频
+*.wav
+*.m4a
+
+# 系统杂项
+Thumbs.db
+desktop.ini
+.DS_Store

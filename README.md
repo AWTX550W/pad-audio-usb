@@ -1,10 +1,13 @@
 # Pad Audio USB · 平板声音转电脑
 
+[![Check scripts](https://github.com/AWTX550W/pad-audio-usb/actions/workflows/check.yml/badge.svg)](https://github.com/AWTX550W/pad-audio-usb/actions/workflows/check.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 用一根 **USB 线**，把安卓平板的声音接到电脑上播放。
 
 专门解决一个很具体的场景：**平板通过 spacedesk 当电脑的扩展屏，平板自己打开本地应用时，声音还是从平板出来，回不到电脑。**
 
-> EN: Route your Android tablet's local audio to your PC over a plain USB cable — no Wi-Fi, no extra app on the tablet, one double-click.
+> **English**: [README.en.md](README.en.md) — Route your Android tablet's local audio to your PC over a plain USB cable. No Wi-Fi, no app on the tablet, one double-click.
 
 ---
 
@@ -75,6 +78,27 @@ spacedesk 本质是「视频帧 + 电脑音频」的推送器，它没有「平�
 
 ---
 
+## 换一台平板就不灵了？
+
+本项目的完整实测只在 **HUAWEI DBY2-W00 / Android 12** 一台机器上做过。别的设备大概率能用，但**开发者选项在哪、授权要不要多开一个开关、音频实现细节**各家都不一样，照着上面的步骤很可能卡住。
+
+这些问题都写在 **[docs/COMPATIBILITY.md](docs/COMPATIBILITY.md)** 里：
+
+- **30 秒自检**：两条命令判断你的设备「能不能救」，以及该用 `output` 还是降级到 `playback`；
+- **分品牌差异**：华为/荣耀、小米/红米、OPPO/一加、vivo/iQOO、三星各自的入口和授权坑（小米的「USB 调试（安全设置）」必须单独开，还得登录账号）；
+- **症状 → 改哪一行**：静音、断续、延迟大、只有部分 App 有声音……逐条对应参数；
+- **自己验证的方法**：录音 + `volumedetect` 看电平。**接近 -91 dB 就是没抓到声音**，别拿「进程没报错」当成功；
+- **让 AI 帮你改**：一段可以直接复制给自己 AI 助手的提示词，带上你的设备信息和验证要求。
+
+另外这两类设备**直接用不了**，别浪费时间：
+
+| 设备 | 原因 |
+|------|------|
+| HarmonyOS NEXT / 鸿蒙 5 平板 | 移除了 AOSP，没有 adb（鸿蒙 2/3/4 仍然可以） |
+| iPad | 没有 adb |
+
+---
+
 ## 已知限制
 
 | 限制 | 说明 |
@@ -94,13 +118,29 @@ pad-audio-usb/
 ├── install.bat              # 首次安装：下载 scrcpy 到 scrcpy\
 ├── 平板声音到电脑.bat        # 主程序：双击开始转发
 ├── run.bat                  # 同上（英文名别名，内容一致）
+├── README.md / README.en.md # 中英文说明
 ├── docs/
-│   └── VERIFICATION.md      # 实测验证记录（含客观测量数据）
+│   ├── VERIFICATION.md      # 实测验证记录（含客观测量数据）
+│   └── COMPATIBILITY.md     # 换设备怎么调、故障排查、AI 提示词模板
+├── scripts/
+│   └── check_repo.py        # 静态检查：bat 换行、重定向陷阱、链接有效性
+├── .github/workflows/
+│   └── check.yml            # CI：每次推送自动跑上面的检查
 ├── LICENSE
 └── .gitignore
 ```
 
 `scrcpy\` 目录由 `install.bat` 生成，不进版本库。
+
+### 关于 CI
+
+`scripts/check_repo.py` 会在每次 push 和 PR 时自动运行，Windows 和 Linux 两个平台各跑一遍。它检查的正是本项目踩过的坑：
+
+- **`.bat` 必须是 CRLF 换行** —— LF 会让 cmd 解析多字节中文时行错位，报 `'声音' 不是内部或外部命令`；
+- **`echo` / `title` 里不能有裸的 `->`** —— cmd 会当成重定向，把输出写进文件而不是打印；
+- 文件不含 BOM、是合法 UTF-8、README 里的相对链接都指向真实存在的文件。
+
+两个平台都跑，是为了顺带验证 `.gitattributes` 里的 `*.bat text eol=crlf` 在两套检出流程下都生效。这一行要是丢了，别人 clone 下来直接就不能用。
 
 ---
 

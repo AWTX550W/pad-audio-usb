@@ -1,0 +1,43 @@
+name: Check scripts
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: 脚本静态检查 (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # 同时在 Windows 和 Linux 上检出，用于验证 .gitattributes 的 CRLF
+        # 规则在两个平台都生效——这是本项目最容易被破坏的一环。
+        os: [windows-latest, ubuntu-latest]
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 配置 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: 显示 bat 换行符（诊断用）
+        shell: bash
+        run: |
+          echo "=== .bat 文件换行符状态 ==="
+          for f in *.bat; do
+            crlf=$(grep -c $'\r$' "$f" 2>/dev/null || echo 0)
+            total=$(wc -l < "$f")
+            echo "$f: CRLF=$crlf / 总行数=$total"
+          done
+
+      - name: 运行仓库检查
+        run: python scripts/check_repo.py

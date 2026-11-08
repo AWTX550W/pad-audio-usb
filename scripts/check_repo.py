@@ -19,6 +19,15 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 
+# Windows 控制台 / CI runner 的默认 stdout 编码可能是 cp1252 或 cp936，
+# 直接 print 中文会抛 UnicodeEncodeError。强制切到 UTF-8。
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        try:
+            _stream.reconfigure(encoding="utf-8", errors="replace")
+        except (ValueError, OSError):
+            pass
+
 errors: list[str] = []
 warnings: list[str] = []
 

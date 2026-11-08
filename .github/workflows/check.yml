@@ -40,4 +40,9 @@ jobs:
           done
 
       - name: 运行仓库检查
+        # Windows runner 的默认 stdout 编码是 cp1252，脚本里的中文输出
+        # 不加这两行会直接 UnicodeEncodeError。
+        env:
+          PYTHONIOENCODING: utf-8
+          PYTHONUTF8: "1"
         run: python scripts/check_repo.py
